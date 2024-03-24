@@ -3,13 +3,14 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	//"github.com/jeremydumais/iplookup/ipaddress"
-    "github.com/alexflint/go-arg"
+	"github.com/alexflint/go-arg"
+	"github.com/jeremydumais/iplookup/ipaddress"
 )
 
 type args struct {
-    IPAddress string `arg:"positional"`
+    IPAddress string `arg:"positional" help:"The IPv4 address to lookup"`
 }
 
 func (args) Version() string {
@@ -17,9 +18,27 @@ func (args) Version() string {
 }
 
 func main() {
+    os.Exit(mainReturnWithCode())
+}
+
+func mainReturnWithCode() int {
     var args args
     arg.MustParse(&args)
 
-    //addr := ipaddress.CreateIPAddress(1, 2, 3, 4)
-    fmt.Printf("Looking info for : %v\n", args.IPAddress)
+    addr, err := ipaddress.ParseIPAddress(args.IPAddress)
+    if err != nil {
+        fmt.Printf("Unable to convert %v to an IPv4 Address\n", args.IPAddress)
+        return 1;
+    }
+    fmt.Printf("IP Address : %v\n", addr)
+    fmt.Printf("Class: %v\n", addr.GetClass().String())
+
+    var isPrivate string
+    if addr.IsPrivate() {
+        isPrivate = "true"
+    } else {
+        isPrivate = "false"
+    }
+    fmt.Printf("Is Private: %v\n", isPrivate)
+    return 0;
 }
